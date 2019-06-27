@@ -59,15 +59,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        alertDialog = new AlertDialog.Builder(this);
-        initORCtoken();
+         setContentView(R.layout.activity_main);
          ButterKnife.bind(this);
+         alertDialog = new AlertDialog.Builder(this);
+        initORCtoken();
     }
     /**
      * 以license文件方式初始化
      */
     private void initORCtoken() {
+        if(!isNetworkAvailable()){
+           Toast.makeText(MainActivity.this,"请检查网路哟是否正常",Toast.LENGTH_SHORT).show();
+            return;
+        }
         OCR.getInstance(this).initAccessToken(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(OCRError error) {
                 // 调用失败，返回OCRError子类SDKError对象
-                Toast.makeText(MainActivity.this,error.getMessage(),Toast.LENGTH_SHORT).show();
+               Toast.makeText(MainActivity.this,error.getMessage(),Toast.LENGTH_SHORT).show();
             }
         }, getApplicationContext());
     }
@@ -100,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         alertText("", result);
     }
 
-    @OnClick({R.id.general_basic_button,R.id.idcard_button,R.id.bankcard_button})
+    @OnClick({R.id.general_basic_button,R.id.idcard_button,R.id.bankcard_button,R.id.qrcode_button})
     public void onClick(View view){
         switch (view.getId()){
             case R.id.general_basic_button:
@@ -108,12 +112,10 @@ public class MainActivity extends AppCompatActivity {
                 if (!hasGotToken) {
                     return;
                 }
-                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
-                intent.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
-                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
-                intent.putExtra(CameraActivity.KEY_CONTENT_TYPE,
-                        CameraActivity.CONTENT_TYPE_GENERAL);
-                startActivityForResult(intent, REQUEST_CODE_GENERAL_BASIC);
+                Intent intent1 = new Intent(MainActivity.this, CameraActivity.class);
+                intent1.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH, FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent1.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_GENERAL);
+                startActivityForResult(intent1, REQUEST_CODE_GENERAL_BASIC);
                 break;
             case R.id.idcard_button:
                 //身份证识别
@@ -129,11 +131,19 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 Intent intent3 = new Intent(MainActivity.this, CameraActivity.class);
-                intent3.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH,
-                        FileUtil.getSaveFile(getApplication()).getAbsolutePath());
-                intent3.putExtra(CameraActivity.KEY_CONTENT_TYPE,
-                        CameraActivity.CONTENT_TYPE_BANK_CARD);
+                intent3.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH, FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent3.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_BANK_CARD);
                 startActivityForResult(intent3, REQUEST_CODE_BANKCARD);
+                break;
+            case R.id.qrcode_button:
+                //二维码识别
+                if (!hasGotToken) {
+                    return;
+                }
+                Intent intent4 = new Intent(MainActivity.this, CameraActivity.class);
+                intent4.putExtra(CameraActivity.KEY_OUTPUT_FILE_PATH, FileUtil.getSaveFile(getApplication()).getAbsolutePath());
+                intent4.putExtra(CameraActivity.KEY_CONTENT_TYPE, CameraActivity.CONTENT_TYPE_GENERAL);
+                startActivityForResult(intent4, REQUEST_CODE_QRCODE);
                 break;
         }
     }
